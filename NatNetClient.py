@@ -1251,6 +1251,7 @@ class NatNetClient:
         return 0
 
     def __process_message( self, data : bytes, print_level=0):
+        print("hello i am message guy")
         #return message ID
         major = self.get_major()
         minor = self.get_minor()
@@ -1263,17 +1264,19 @@ class NatNetClient:
                 , str(self.__nat_net_requested_version[2]), " "\
                 , str(self.__nat_net_requested_version[3]))
 
-        message_id = get_message_id(data)
+        message_id = get_message_id(data) 
+        print(message_id)
 
         packet_size = int.from_bytes( data[2:4], byteorder='little' )
 
         #skip the 4 bytes for message ID and packet_size
         offset = 4
         if message_id == self.NAT_FRAMEOFDATA :
+            print("frame")
             trace( "Message ID  : %3.1d NAT_FRAMEOFDATA"% message_id )
             trace( "Packet Size : ", packet_size )
 
-            offset_tmp, mocap_data = self.__unpack_mocap_data( data[offset:], packet_size, major, minor )
+            offset_tmp, mocap_data = self.__unpack_rigid_body_data( data[offset:], packet_size, major, minor )
             offset += offset_tmp
             # print("MoCap Frame: %d\n"%(mocap_data.prefix_data.frame_number))
             # get a string version of the data for output
@@ -1284,6 +1287,7 @@ class NatNetClient:
             self.mocap_data = mocap_data
 
         elif message_id == self.NAT_MODELDEF :
+            print("model")
             trace( "Message ID  : %3.1d NAT_MODELDEF"% message_id )
             trace( "Packet Size : %d"% packet_size )
             offset_tmp, data_descs = self.__unpack_data_descriptions( data[offset:], packet_size, major, minor)
@@ -1295,11 +1299,13 @@ class NatNetClient:
                 print("%s\n"%(data_descs_str))
 
         elif message_id == self.NAT_SERVERINFO :
+            print("info")
             trace( "Message ID  : %3.1d NAT_SERVERINFO"% message_id )
             trace( "Packet Size : ", packet_size )
             offset += self.__unpack_server_info( data[offset:], packet_size, major, minor)
 
         elif message_id == self.NAT_RESPONSE :
+            print("response")
             trace( "Message ID  : %3.1d NAT_RESPONSE"% message_id )
             trace( "Packet Size : ", packet_size )
             if packet_size == 4 :
@@ -1320,6 +1326,7 @@ class NatNetClient:
             trace( "Packet Size : ", packet_size )
             trace( "Received 'Unrecognized request' from server" )
         elif message_id == self.NAT_MESSAGESTRING :
+            print("hey! idont know you")
             trace( "Message ID  : %3.1d NAT_MESSAGESTRING"% message_id)
             trace( "Packet Size : ", packet_size )
             message, separator, remainder = bytes(data[offset:]).partition( b'\0' )
